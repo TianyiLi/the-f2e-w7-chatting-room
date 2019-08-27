@@ -21,7 +21,7 @@ export default class Login extends Vue { }
       <input type="text"
         name=""
         id="">
-      <button>Let's Chat</button>
+      <button @click="$router.push('/chatroom')">Let's Chat</button>
     </div>
   </div>
 </template>

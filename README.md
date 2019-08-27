@@ -1,5 +1,15 @@
 # the-f2e-w7-chatting-room
 
+前端時光屋 w7 聊天室
+
+看後端做的順不順利吧...
+
+有好多毛要注意QQ
+
+使用[設計稿](https://challenge.thef2e.com/user/1461?schedule=4021)
+
+[預覽網址](https://tianyili.github.io/the-f2e-w7-chatting-room)
+
 ## Project setup
 ```
 yarn install
