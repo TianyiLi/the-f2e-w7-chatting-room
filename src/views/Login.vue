@@ -1,12 +1,25 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import UserImg from '@/components/PersonSelect.vue'
+import { Mutation } from 'vuex-class';
 @Component({
   components: {
     UserImg
   }
 })
-export default class Login extends Vue { }
+export default class Login extends Vue {
+  @Mutation('setName') setName !: (name: string) => void
+  private name = ''
+
+  onLogin () {
+    if (this.name === '') {
+      alert('Name is not set!')
+      return false
+    }
+    this.setName(this.name)
+    this.$router.push('/chatroom')
+  }
+}
 </script>
 <template>
   <div class="login">
@@ -16,12 +29,13 @@ export default class Login extends Vue { }
     <div class="login-wrap">
       <div class="sub-title">You are invited to a chat room</div>
       <h1 class="title">Aurora Hunters</h1>
-        <UserImg class="user-img"></UserImg>
+      <UserImg class="user-img"></UserImg>
       <div class="name-input">How To Call You?</div>
       <input type="text"
+        v-model="name"
         name=""
         id="">
-      <button @click="$router.push('/chatroom')">Let's Chat</button>
+      <button @click="onLogin">Let's Chat</button>
     </div>
   </div>
 </template>
