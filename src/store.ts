@@ -25,7 +25,7 @@ export default new Vuex.Store({
     channel: '',
     uuid: '',
     friends: JSON.parse(JSON.stringify(friends)),
-    chat: [{img: 0, message: '', who: '0000', }]
+    chat: [{ img: 0, message: '', who: '0000' }]
   },
   mutations: {
     setName (state, name: string) {

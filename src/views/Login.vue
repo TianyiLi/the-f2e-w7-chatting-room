@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import UserImg from '@/components/PersonSelect.vue'
-import { Mutation } from 'vuex-class';
+import { Mutation } from 'vuex-class'
 @Component({
   components: {
     UserImg
