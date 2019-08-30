@@ -1,5 +1,6 @@
 <script>
 import Emoji from 'vue-emoji-picker'
+import { mapMutations, mapState } from 'vuex'
 export default {
   components: {
     Emoji
@@ -11,18 +12,33 @@ export default {
         img: {},
         file: {}
       },
-      emojiSearch: ''
+      emojiSearch: '',
+      previewImgSrc: [],
+      filesName: ''
     }
   },
+  computed: {
+    ...mapState(['imgUtil', 'fileUtil'])
+  },
   methods: {
+    ...mapMutations(['setImgUtil', 'setFileUtil']),
     imgOnClick () {
       if (this.$refs['imgUpdate']) {
         let file = this.$refs['imgUpdate']
         this.$refs['imgUpdate'].click()
       }
     },
-    imgInputOnChange (file) {
-      console.log(file)
+    imgInputOnChange (evt) {
+      console.log(evt.target.files)
+      let state = [...evt.target.files].every(img => img.type.startsWith('image/'))
+      if (state) {
+        this.setImgUtil(evt.target.files)
+        this.setPreviewImagesSrc()
+        return true
+      } else {
+        console.error('Files incorrect')
+        return false
+      }
     },
     fileOnClick () {
       if (this.$refs['fileUpdate']) {
@@ -30,8 +46,10 @@ export default {
         this.$refs['fileUpdate'].click()
       }
     },
-    fileOnChange (file) {
-      console.log(file)
+    fileOnChange (evt) {
+      console.log(evt.target.files)
+      this.setFileUtil(evt.target.files)
+      this.filesName = [...evt.target.files].map(ele => ele.name).join()
     },
     emojiOnInsert (emoji) {
       this.input.text += emoji
@@ -49,12 +67,34 @@ export default {
       this.input.text = ''
       this.input.img = {}
       this.input.file = {}
+    },
+    async getPreviewImage (src) {
+      let reader = new FileReader()
+      return new Promise((resolve) => {
+        reader.onload = e => resolve(e.target.result)
+        reader.readAsDataURL(src)
+      })
+    },
+    async setPreviewImagesSrc () {
+      let _map = this.imgUtil.obj
+      let result = []
+      for (const img of _map) {
+        let _tmp = await this.getPreviewImage(img)
+        result.push(_tmp)
+      }
+      this.previewImgSrc = result
     }
   }
 }
 </script>
 <template>
   <div class="input-wrap">
+    <div class="img-wrap" v-if="previewImgSrc.length">
+      <img :src="img"
+        alt=""
+        v-for="(img, i) in previewImgSrc"
+        :key="i">
+    </div>
     <div class="preview-wrap">
       <div class="img-previews-ctn"></div>
       <div class="files-name-wrap"></div>
@@ -97,18 +137,21 @@ export default {
       class="img-up">
     <img src="../assets/file-up-btn.svg"
       alt=""
+      :title="this.filesName"
       @click="fileOnClick"
       class="file-up">
     <input type="file"
       name=""
       id=""
       multiple
+      @change="imgInputOnChange($event)"
       v-show="false"
       ref="imgUpdate">
     <input type="file"
       name=""
       id=""
       multiple
+      @change="fileOnChange($event)"
       v-show="false"
       ref="fileUpdate">
   </div>
@@ -121,6 +164,13 @@ export default {
   position relative
   display flex
   justify-content flex-end
+  .img-wrap
+    position absolute
+    bottom 100%
+    left 0
+    img
+      width 120px
+      margin 5px
   &>input[type=text]
     position absolute
     left 0
@@ -133,7 +183,7 @@ export default {
     font-size 24px
     color white
     z-index 0
-  img
+  &>img
     z-index 1
     cursor pointer
     user-select none
@@ -146,13 +196,15 @@ export default {
   left 0
   box-sizing border-box
   padding 1rem
-  width 262px
-  height 145px
+  width 30vw
+  height 25vh
   background-color #1D1D1D
   user-select none
   overflow hidden
   z-index 2
+  padding-right 5px
   &:hover
+    padding-right 0
     overflow-y scroll
   &::-webkit-scrollbar
     width 5px

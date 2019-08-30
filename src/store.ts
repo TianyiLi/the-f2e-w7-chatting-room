@@ -25,7 +25,17 @@ export default new Vuex.Store({
     channel: '',
     uuid: '',
     friends: JSON.parse(JSON.stringify(friends)),
-    chat: [{ img: 0, message: '', who: '0000' }]
+    chat: [{ img: 0, message: '', who: '0000' }],
+    imgUtil: {
+      obj: false
+    },
+    fileUtil: {
+      obj: false
+    },
+    imgViewer: {
+      src: '',
+      isShow: false
+    }
   },
   mutations: {
     setName (state, name: string) {
@@ -33,6 +43,15 @@ export default new Vuex.Store({
     },
     setUserImg (state, imgIndex: number) {
       state.userImg = imgIndex
+    },
+    setImgUtil (state, imgUtil: any) {
+      state.imgUtil.obj = imgUtil
+    },
+    setFileUtil (state, fileUtil: any) {
+      state.fileUtil.obj = fileUtil
+    },
+    showImgViewer (state, source: {src: string, isShow: boolean}) {
+      state.imgViewer = source
     }
   },
   actions: {

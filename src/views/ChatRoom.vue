@@ -2,10 +2,11 @@
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import UserWrap from '@/components/UserWrap'
 import { State } from 'vuex-class'
-
+import ChatInput from '@/components/ChatInput.vue'
 @Component({
   components: {
-    UserWrap
+    UserWrap,
+    ChatInput
   }
 })
 export default class ChatRoom extends Vue {
@@ -49,7 +50,9 @@ export default class ChatRoom extends Vue {
         :name="friend.name"
         :active="friend.active"></UserWrap>
     </div>
-    <div class="chatroom"></div>
+    <div class="chatroom">
+      <ChatInput class="chat-input"></ChatInput>
+    </div>
   </div>
 </template>
 <style lang="stylus" scoped>
@@ -127,6 +130,7 @@ export default class ChatRoom extends Vue {
 .chatroom
   grid-area chatroom
   background-color #1D1D1D
+  position relative
   &::-webkit-scrollbar
     width 8px
     height 9px
@@ -167,4 +171,8 @@ export default class ChatRoom extends Vue {
       background-color #d6c493
     &.do-not-disturb
       background-color #D69393
+.chat-input
+  position absolute
+  bottom 0
+  width 100%
 </style>
