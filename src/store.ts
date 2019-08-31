@@ -1,5 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import { IState, IChatMessageStack, IPostChatMessageStack } from './iStore'
+import { getPreviewImage } from './Util'
 
 Vue.use(Vuex)
 const c = (name: string, active = ~~(Math.random() * 3), img = ~~(Math.random() * 5)) => {
@@ -18,25 +20,30 @@ const friends = [
   c('Abby'),
   c('hulk')
 ]
-export default new Vuex.Store({
-  state: {
-    name: '',
-    userImg: 1,
-    channel: '',
-    uuid: '',
-    friends: JSON.parse(JSON.stringify(friends)),
-    chat: [{ img: 0, message: '', who: '0000' }],
-    imgUtil: {
-      obj: false
-    },
-    fileUtil: {
-      obj: false
-    },
-    imgViewer: {
-      src: '',
-      isShow: false
-    }
+
+const InterfaceState: IState = {
+  name: '',
+  userImg: 1,
+  channel: '',
+  uuid: '',
+  friends: JSON.parse(JSON.stringify(friends)),
+  chat: [],
+  imgUtil: {
+    obj: undefined
   },
+  fileUtil: {
+    obj: undefined
+  },
+  imgViewer: {
+    src: '',
+    isShow: false
+  }
+}
+
+let state: IState = JSON.parse(JSON.stringify(InterfaceState))
+
+export default new Vuex.Store({
+  state,
   mutations: {
     setName (state, name: string) {
       state.name = name
@@ -50,13 +57,48 @@ export default new Vuex.Store({
     setFileUtil (state, fileUtil: any) {
       state.fileUtil.obj = fileUtil
     },
-    showImgViewer (state, source: {src: string, isShow: boolean}) {
+    showImgViewer (state, source: { src: string, isShow: boolean }) {
       state.imgViewer = source
+    },
+    pushMessageStack (state, message: IChatMessageStack) {
+      console.log('run')
+      state.chat.push(message)
     }
   },
   actions: {
-    postText ({ state }, message: '', img?: string) {
+    logout ({ state }) {
+      Object.assign(state, {
+        name: '',
+        userImg: 1
+      })
+    },
 
+    async postMessageStack ({ state, commit }, message: IPostChatMessageStack) {
+      if (message.contentText || message.contentImg || message.contentFiles) {
+        let imgs = []
+        if (message.contentImg) {
+          for (let i of message.contentImg) {
+            imgs.push(await getPreviewImage(i))
+          }
+        }
+        let files: { name: string, src: string }[] = []
+        if (message.contentFiles) {
+          files = [...message.contentFiles].map(e => ({ name: e.name, src: '' }))
+        }
+        console.log(imgs, files)
+        let result: IChatMessageStack = {
+          name: state.name,
+          color: 'white',
+          contentFiles: files,
+          contentImg: imgs,
+          userImg: state.userImg,
+          contentText: message.contentText,
+          created_at: message.created_at
+        }
+        commit('pushMessageStack', result)
+      } else {
+        return false
+      }
     }
   }
 })

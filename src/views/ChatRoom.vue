@@ -1,22 +1,53 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import UserWrap from '@/components/UserWrap'
-import { State } from 'vuex-class'
+import { State, Action } from 'vuex-class'
 import ChatInput from '@/components/ChatInput.vue'
+import ImgViewer from '@/components/ImgPreviewWrap.vue'
+import { IPostChatMessageStack, IChatMessageStack } from '../IStore'
+import { getPreviewImage } from '../Util'
 @Component({
   components: {
     UserWrap,
-    ChatInput
+    ChatInput,
+    ImgViewer
   }
 })
 export default class ChatRoom extends Vue {
   @State('name') name!: string
   @State('userImg') userImg!: number
   @State('friends') friends!: { name: string, img: number, active: number }[]
+  @State('chat') chat!: IChatMessageStack
+  @Action('postMessageStack') postMessage!: (message: IPostChatMessageStack) => void | false
+  @Action('logout') _logout!: Function
   private onSearch = false
 
   searchToggle () {
     this.onSearch = !this.onSearch
+  }
+
+  async inputOnPost ({ text, img, file }: { text: string, img: FileList, file: FileList }) {
+    let imgs: string[] = []
+    let files: { name: string, src: string }[] = []
+    this.postMessage({
+      name: this.name,
+      userImg: this.userImg,
+      color: 'white',
+      created_at: '' + (~~(+new Date() / 1000)),
+      contentText: text,
+      contentImg: img,
+      contentFiles: file
+    })
+  }
+
+  logout () {
+    this._logout()
+    this.$router.push('/')
+  }
+
+  getRealTime (time: string) {
+    let _time = new Date(+time * 1000)
+    return `${_time.getHours() % 13} : ${_time.getMinutes()} ${_time.getHours() > 12 ? 'pm' : 'am'}`
   }
 }
 </script>
@@ -36,22 +67,31 @@ export default class ChatRoom extends Vue {
       </div>
     </div>
     <div class="self-info">
-      <div class="headline">Aurora Hunters <img src="../assets/logout.svg"
+      <div class="headline">Aurora Hunters <img class="logout"
+          @click="logout"
+          src="../assets/logout.svg"
           alt=""></div>
       <UserWrap :userImg="userImg"
         :name="name"
         :active="0"></UserWrap>
     </div>
     <div class="friends">
-      <UserWrap
-        v-for="(friend, i) in friends"
+      <UserWrap v-for="(friend, i) in friends"
         :key="i"
         :userImg="friend.img + 1"
         :name="friend.name"
         :active="friend.active"></UserWrap>
     </div>
     <div class="chatroom">
-      <ChatInput class="chat-input"></ChatInput>
+      <div class="wrap">
+        <div class="row"
+          v-for="(row, i) in chat"
+          :key="i">
+          {{`${row.name} said ${row.contentText} on ${getRealTime(row.created_at)}`}}
+        </div>
+      </div>
+      <ChatInput @post="inputOnPost"
+        class="chat-input"></ChatInput>
     </div>
   </div>
 </template>
@@ -107,6 +147,8 @@ export default class ChatRoom extends Vue {
   display flex
   flex-direction column
   justify-content space-between
+  .logout
+    cursor pointer
   .headline
     box-sizing border-box
     width 100%
@@ -148,6 +190,8 @@ export default class ChatRoom extends Vue {
     padding 14px 24px
     .user-img
       width 42px
+  .wrap
+    color white
 >>>.user-wrap
   display flex
   justify-content flex-start

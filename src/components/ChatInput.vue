@@ -1,6 +1,7 @@
 <script>
 import Emoji from 'vue-emoji-picker'
-import { mapMutations, mapState } from 'vuex'
+import { mapMutations, mapState, mapActions } from 'vuex'
+import { getPreviewImage } from '@/Util'
 export default {
   components: {
     Emoji
@@ -9,8 +10,8 @@ export default {
     return {
       input: {
         text: '',
-        img: {},
-        file: {}
+        img: false,
+        file: false
       },
       emojiSearch: '',
       previewImgSrc: [],
@@ -22,6 +23,7 @@ export default {
   },
   methods: {
     ...mapMutations(['setImgUtil', 'setFileUtil']),
+    ...mapActions(['pushMessageStack']),
     imgOnClick () {
       if (this.$refs['imgUpdate']) {
         let file = this.$refs['imgUpdate']
@@ -65,15 +67,8 @@ export default {
       console.log(file)
       this.$emit('post', { text, img, file })
       this.input.text = ''
-      this.input.img = {}
-      this.input.file = {}
-    },
-    async getPreviewImage (src) {
-      let reader = new FileReader()
-      return new Promise((resolve) => {
-        reader.onload = e => resolve(e.target.result)
-        reader.readAsDataURL(src)
-      })
+      this.input.img = false
+      this.input.file = false
     },
     async setPreviewImagesSrc () {
       let _map = this.imgUtil.obj
@@ -83,7 +78,8 @@ export default {
         result.push(_tmp)
       }
       this.previewImgSrc = result
-    }
+    },
+    getPreviewImage
   }
 }
 </script>

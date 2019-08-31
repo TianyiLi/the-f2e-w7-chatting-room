@@ -2,9 +2,9 @@
 
 前端時光屋 w7 聊天室
 
-看後端做的順不順利吧...
+<del>看後端做的順不順利吧...</del>
 
-有好多毛要注意QQ
+enter可以用來發送message，不過backend看來是來不及完成了QQ
 
 使用[設計稿](https://challenge.thef2e.com/user/1461?schedule=4021)
 
