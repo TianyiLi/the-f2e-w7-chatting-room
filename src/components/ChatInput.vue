@@ -10,8 +10,8 @@ export default {
     return {
       input: {
         text: '',
-        img: false,
-        file: false
+        img: undefined,
+        file: undefined
       },
       emojiSearch: '',
       previewImgSrc: [],
@@ -36,6 +36,7 @@ export default {
       if (state) {
         this.setImgUtil(evt.target.files)
         this.setPreviewImagesSrc()
+        this.input.img = evt.target.files
         return true
       } else {
         console.error('Files incorrect')
@@ -52,6 +53,7 @@ export default {
       console.log(evt.target.files)
       this.setFileUtil(evt.target.files)
       this.filesName = [...evt.target.files].map(ele => ele.name).join()
+      this.input.file = evt.target.files
     },
     emojiOnInsert (emoji) {
       this.input.text += emoji
@@ -63,12 +65,13 @@ export default {
       console.log('get enter')
       let { text, img, file } = this.input
       console.log(text)
-      console.log(img)
-      console.log(file)
+      console.log(this.input.img)
+      console.log(this.input.file)
       this.$emit('post', { text, img, file })
       this.input.text = ''
-      this.input.img = false
-      this.input.file = false
+      this.input.img = undefined
+      this.input.file = undefined
+      this.previewImgSrc = []
     },
     async setPreviewImagesSrc () {
       let _map = this.imgUtil.obj

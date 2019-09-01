@@ -67,12 +67,8 @@ export default new Vuex.Store({
   },
   actions: {
     logout ({ state }) {
-      Object.assign(state, {
-        name: '',
-        userImg: 1
-      })
+      Object.assign(state, JSON.parse(JSON.stringify(InterfaceState)))
     },
-
     async postMessageStack ({ state, commit }, message: IPostChatMessageStack) {
       if (message.contentText || message.contentImg || message.contentFiles) {
         let imgs = []
@@ -87,10 +83,10 @@ export default new Vuex.Store({
         }
         console.log(imgs, files)
         let result: IChatMessageStack = {
-          name: state.name,
+          name: message.name,
           color: 'white',
-          contentFiles: files,
-          contentImg: imgs,
+          contentFiles: message.contentFiles ? files : undefined,
+          contentImg: message.contentImg ? imgs : undefined,
           userImg: state.userImg,
           contentText: message.contentText,
           created_at: message.created_at

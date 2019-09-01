@@ -4,13 +4,15 @@ import UserWrap from '@/components/UserWrap'
 import { State, Action } from 'vuex-class'
 import ChatInput from '@/components/ChatInput.vue'
 import ImgViewer from '@/components/ImgPreviewWrap.vue'
+import UserImg from '@/components/UserImg'
 import { IPostChatMessageStack, IChatMessageStack } from '../IStore'
 import { getPreviewImage } from '../Util'
 @Component({
   components: {
     UserWrap,
     ChatInput,
-    ImgViewer
+    ImgViewer,
+    UserImg
   }
 })
 export default class ChatRoom extends Vue {
@@ -21,20 +23,34 @@ export default class ChatRoom extends Vue {
   @Action('postMessageStack') postMessage!: (message: IPostChatMessageStack) => void | false
   @Action('logout') _logout!: Function
   private onSearch = false
+  private imgPreviewSrc = ''
+  private imgPreviewOnShow = false
+  private colorList = ['#ffffff', '#FF9B9B', '#6FE2C3', '#C98CFD', '#69D1FF']
 
   searchToggle () {
     this.onSearch = !this.onSearch
   }
 
-  async inputOnPost ({ text, img, file }: { text: string, img: FileList, file: FileList }) {
+  async inputOnPost (arg: { text: string, img: FileList, file: FileList }) {
+    console.log(arg)
+    let { text, img, file } = arg
     let imgs: string[] = []
     let files: { name: string, src: string }[] = []
     this.postMessage({
       name: this.name,
       userImg: this.userImg,
-      color: 'white',
+      color: this.colorList[0],
       created_at: '' + (~~(+new Date() / 1000)),
       contentText: text,
+      contentImg: img,
+      contentFiles: file
+    })
+    this.postMessage({
+      name: 'Foodie',
+      userImg: 2,
+      color: this.colorList[1],
+      created_at: '' + (~~(+new Date() / 1000)),
+      contentText: 'This is Echo: \n' + text,
       contentImg: img,
       contentFiles: file
     })
@@ -47,7 +63,16 @@ export default class ChatRoom extends Vue {
 
   getRealTime (time: string) {
     let _time = new Date(+time * 1000)
-    return `${_time.getHours() % 13} : ${_time.getMinutes()} ${_time.getHours() > 12 ? 'pm' : 'am'}`
+    return `${_time.getHours() % 13} : ${('0' + _time.getMinutes()).slice(-2)} ${_time.getHours() > 12 ? 'pm' : 'am'}`
+  }
+
+  imgOnClick (src: string) {
+    this.imgPreviewSrc = src
+    this.imgPreviewOnShow = true
+  }
+
+  imgPreviewOnClick () {
+    this.imgPreviewOnShow = false
   }
 }
 </script>
@@ -59,10 +84,10 @@ export default class ChatRoom extends Vue {
       <div class="search">
         <img src="../assets/zoom-2.svg"
           @click="searchToggle"
-          alt="">
+          alt="" />
         <span class="underline"
           :class="onSearch ? 'active' : ''">
-          <input type="text">
+          <input type="text" />
         </span>
       </div>
     </div>
@@ -70,7 +95,7 @@ export default class ChatRoom extends Vue {
       <div class="headline">Aurora Hunters <img class="logout"
           @click="logout"
           src="../assets/logout.svg"
-          alt=""></div>
+          alt="" /></div>
       <UserWrap :userImg="userImg"
         :name="name"
         :active="0"></UserWrap>
@@ -86,13 +111,39 @@ export default class ChatRoom extends Vue {
       <div class="wrap">
         <div class="row"
           v-for="(row, i) in chat"
+          :class="row.name === name ? 'is-me' : ''"
           :key="i">
-          {{`${row.name} said ${row.contentText} on ${getRealTime(row.created_at)}`}}
+          <UserImg class="chat-img"
+            :userImg="row.userImg"></UserImg>
+          <div class="context-wrap">
+            <span class="name"
+              :style="`color:${row.color}`"
+              v-text="row.name"></span>
+            <span class="created-at"
+              v-text="getRealTime(row.created_at)"></span>
+            <span class="file-wrap"
+              v-if="row.contentFiles">
+              with {{row.contentFiles.map(e => e.name).join()}}
+            </span>
+            <div class="context"
+              v-text="row.contentText"></div>
+            <div class="img-wrap"
+              v-if="row.contentImg">
+              <img :src="img"
+                v-for="(img, i) in row.contentImg"
+                @click="imgOnClick(img)"
+                :key="i"
+                alt="" />
+            </div>
+          </div>
         </div>
       </div>
       <ChatInput @post="inputOnPost"
         class="chat-input"></ChatInput>
     </div>
+    <ImgViewer v-if="imgPreviewOnShow"
+      @click.native="imgPreviewOnClick"
+      :src="imgPreviewSrc"></ImgViewer>
   </div>
 </template>
 <style lang="stylus" scoped>
@@ -119,6 +170,8 @@ export default class ChatRoom extends Vue {
   width 100%
   .search
     display flex
+    img
+      cursor pointer
     .underline
       margin-left 5px
       height auto
@@ -136,6 +189,7 @@ export default class ChatRoom extends Vue {
         overflow unset
         width 141px
 .self-info, .friends
+  user-select none
   color #dbdbdb
   background-color #272727
 .self-info
@@ -192,13 +246,63 @@ export default class ChatRoom extends Vue {
       width 42px
   .wrap
     color white
+    overflow-y auto
+    height calc(100vh - 130px)
+    box-sizing border-box
+    padding 22px 24px 0px 24px
+    &::-webkit-scrollbar
+      width 8px
+      height 9px
+      z-index 5
+    &::-webkit-scrollbar-track
+      background #cccccc
+      border-radius 5px
+    &::-webkit-scrollbar-thumb
+      border-radius 5px
+      background gray
+    .row
+      width 100%
+      display flex
+      justify-content flex-start
+      margin-bottom 16px
+    .chat-img
+      width 42px
+      margin-right 22px
+      align-self flex-start
+    .name
+      font-size 16px
+      margin-right 15px
+    .created-at
+      font-size 10px
+      color #DBDBDB
+    .context
+      margin-top 7px
+      font-size 14px
+      margin-bottom 11px
+    .img-wrap
+      img
+        max-width 125px
+        max-height 200px
+    .row.is-me
+      justify-content flex-end
+      .chat-img, .name
+        display none
+      .created-at, .context
+        display block
+        text-align right
+        margin-left auto
+        margin-right 0
+      .context
+        margin-right 15px
 >>>.user-wrap
   display flex
   justify-content flex-start
   align-items center
   width 100%
   font-size 18px
+  user-select none
   img
+    user-select none
     height 42px
   .name
     margin-left 22px

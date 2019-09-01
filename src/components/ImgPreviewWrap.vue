@@ -25,6 +25,6 @@ export default class ImgPreview extends Vue {
   .pic
     img
       border solid 4px white
-      max-width calc(100vw / 3 * 2)
+      width calc(100vw / 3 * 2)
       max-height calc(67vh)
 </style>
